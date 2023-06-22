@@ -1,0 +1,63 @@
+image: 'abhishekf5/maven-abhishek-docker-agent:v1'
+
+variables:
+  SONAR_HOST_URL: http://172.174.161.18/:9000
+  SONAR_LOGIN: d853d3dfb865dd1eba7b2336dc575b6697b86571
+
+# Define the default working directory for the pipeline
+before_script:
+  - cd java-maven-sonar-argocd-helm-k8s/spring-boot-app
+
+stages:   
+  - build
+  - test
+  # - sonarqube
+  - dockerization
+  - deploy
+
+build-job:  
+  stage: build
+  script:
+    - echo "Compiling the code..."
+    - mvn clean package
+
+unit-test-job:  
+  stage: test  
+  script:
+    - echo "Running unit tests... This will take about 60 seconds."
+    - mvn test
+
+# code-quality-job:  
+#   stage: sonarqube 
+#   script:
+#     - echo "scanning code"
+#     -  mvn sonar:sonar -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_LOGIN}
+
+kaniko:
+  stage: dockerization
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+
+
+  script:
+    - echo "{\"auths\":{\"cdexgitlab.azurecr.io\":{\"username\":\"cdexgitlab\",\"password\":\"RsD9NzIFKFXPfqpwbOwk1SFjMPz7iuVtKpd2o3fPVv+ACRDWfFb8\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor --context $CI_PROJECT_DIR --destination cdexgitlab.azurecr.io/gitlab-test:$CI_JOB_ID
+
+deploy to k8s:
+  image:
+    name: bitnami/kubectl:latest
+    entrypoint: ['']
+  stage: deploy
+  before_script:
+  - cd java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests
+  script:
+    - kubectl config get-contexts
+   #  - kubectl config use-context .gitlab/agents/kubernetes/:kubernetes
+    - kubectl get pods
+    - ls -al
+    - sed -i "s/replaceImageTag/${CI_JOB_ID}/g" deployment.yml
+    # - cat java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
+    # - cd java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests
+    - kubectl apply -f .
+    
