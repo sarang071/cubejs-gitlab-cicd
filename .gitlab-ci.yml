@@ -1,32 +1,18 @@
-image: 'abhishekf5/maven-abhishek-docker-agent:v1'
-
-variables:
-  SONAR_HOST_URL: http://172.171.252.59:9000
-  SONAR_LOGIN: 079b8cb6de38d466123f86069aae197478bc617a
-
-# Define the default working directory for the pipeline
-before_script:
-  - cd java-maven-sonar-argocd-helm-k8s/spring-boot-app
-
 stages:   
   - build
-  - test
   - sonarqube
-  - dockerization
+  - setup
   - deploy
   - cleanup
 
-build-job:  
+build Image and Push to ACR:
   stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
   script:
-    - echo "Compiling the code..."
-    - mvn clean package
-
-unit-test-job:  
-  stage: test  
-  script:
-    - echo "Running unit tests... This will take about 60 seconds."
-    - mvn test
+    - echo "{\"auths\":{\"cdexgitlab.azurecr.io\":{\"username\":\"cdexgitlab\",\"password\":\"fm0cc8BkqO7Q7da/nSNcRNGkVTahAliel3JbjlIfne+ACRC37O/8\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor --context java-maven-sonar-argocd-helm-k8s/spring-boot-app/ --destination cdexgitlab.azurecr.io/cubejs:$CI_JOB_ID  
 
 code-quality-job:  
   stage: sonarqube 
@@ -34,16 +20,32 @@ code-quality-job:
     - echo "scanning code"
     -  mvn sonar:sonar -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_LOGIN}
 
-kaniko:
-  stage: dockerization
-  image:
-    name: gcr.io/kaniko-project/executor:debug
-    entrypoint: [""]
-
-
+Prequisites:
+  stage: setup
+  image: mcr.microsoft.com/azure-cli
+  before_script:
+    - cd java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests
   script:
-    - echo "{\"auths\":{\"cdexgitlab.azurecr.io\":{\"username\":\"cdexgitlab\",\"password\":\"fm0cc8BkqO7Q7da/nSNcRNGkVTahAliel3JbjlIfne+ACRC37O/8\"}}}" > /kaniko/.docker/config.json
-    - /kaniko/executor --context java-maven-sonar-argocd-helm-k8s/spring-boot-app/ --destination cdexgitlab.azurecr.io/gitlab-test:$CI_JOB_ID
+    # Install kubectl
+    - ls -al
+    - az aks install-cli
+
+    # Authenticate with AKS cluster
+    - az login --service-principal -u 5c023096-5c14-43b1-acae-f0f22f115f56 -p grY8Q~PDZ71PaveGw448ZbKhGzCHvja4x~Jtla5E --tenant a787b852-29bf-4164-add5-7d55cac58f45
+    - subscriptionId="$(az account list --query "[?isDefault].id" -o tsv)"
+    - echo $subscriptionId
+    - az account set --subscription 0db1b169-34da-432c-98d4-2db3188443a7
+    # - az aks get-credentials --resource-group Gitlab --name $AKS_CLUSTER_NAME
+    - az aks get-credentials --resource-group Test --name Gitlab
+
+    # Installing Ingress Controller
+    - az aks update -n Gitlab -g Test  --enable-disk-driver --enable-file-driver --enable-blob-driver 
+    - chmod 700 get_helm.sh
+    - ./get_helm.sh
+    - kubectl create namespace ingress-basic
+    - helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+    -  helm repo update
+    - helm install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-basic \--set controller.service.annotations."service\.beta\.kubernetes\.io/azure-load-balancer-health-probe-request-path"=/healthz
 
 
 deploy:

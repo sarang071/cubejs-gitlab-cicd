@@ -1,3 +1,0 @@
-ci_access:
-  projects:
-    - id: java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests
