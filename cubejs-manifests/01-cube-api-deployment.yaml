@@ -29,7 +29,7 @@ spec:
             - name: CUBEJS_REDIS_URL
               value: redis://redis:6379 
             - name: CUBEJS_DB_HOST
-              value: cubejs-sql-server.mysql.database.azure.com
+              value: sarang.mysql.database.azure.com
             - name: CUBEJS_DB_NAME
               value: "cubejs"
             - name: CUBEJS_DB_USER
@@ -38,7 +38,7 @@ spec:
               value: "Redracoon@123"
             - name: CUBEJS_DB_TYPE
               value: mysql
-          image: cubejs/cube:v0.28.14
+          image: cubejs/cube:replaceImageTag
           name: cube-api
           ports:
             - containerPort: 3000

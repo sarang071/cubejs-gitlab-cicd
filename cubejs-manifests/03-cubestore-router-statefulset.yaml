@@ -26,7 +26,7 @@ spec:
               value: cubestore-router:9999
             - name: CUBESTORE_WORKERS # Edit the workers if you change the number of worker replicas
               value: cubestore-workers-0.cubestore-workers:10000
-          image: cubejs/cubestore:v0.28.14
+          image: cubejs/cubestore:replaceImageTag
           name: cubestore-router
           ports:
             - containerPort: 9999

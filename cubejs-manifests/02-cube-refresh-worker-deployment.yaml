@@ -40,7 +40,7 @@ spec:
               value: mysql
             - name: CUBEJS_REFRESH_WORKER
               value: "true"
-          image: cubejs/cube:v0.28.14
+          image: cubejs/cube:replaceImageTag
           name: cube-refresh-worker
           resources: {}
           volumeMounts:

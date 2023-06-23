@@ -39,7 +39,7 @@ spec:
               value: cubestore-workers-0.cubestore-workers:10000
             - name: CUBESTORE_WORKER_PORT
               value: "10000"
-          image: cubejs/cubestore:v0.28.14
+          image: cubejs/cubestore:replaceImageTag
           name: cubestore-workers
           ports:
             - containerPort: 10000

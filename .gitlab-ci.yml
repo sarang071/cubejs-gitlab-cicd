@@ -12,7 +12,7 @@ build Image and Push to ACR:
     entrypoint: [""]
   script:
     - echo "{\"auths\":{\"cdexgitlab.azurecr.io\":{\"username\":\"cdexgitlab\",\"password\":\"fm0cc8BkqO7Q7da/nSNcRNGkVTahAliel3JbjlIfne+ACRC37O/8\"}}}" > /kaniko/.docker/config.json
-    - /kaniko/executor --context java-maven-sonar-argocd-helm-k8s/spring-boot-app/ --destination cdexgitlab.azurecr.io/cubejs:$CI_JOB_ID  
+    - /kaniko/executor --context . --destination cdexgitlab.azurecr.io/cubejs:$CI_JOB_ID  
 
 code-quality-job:  
   stage: sonarqube 
@@ -53,8 +53,8 @@ deploy:
   image: mcr.microsoft.com/azure-cli
   script:
     # Install kubectl
-    - cd ../spring-boot-app-manifests/
-    - sed -i "s/replaceImageTag/${CI_JOB_ID}/g" deployment.yml
+    - cd cubejs-manifests
+    - sed -i "s/replaceImageTag/${CI_JOB_ID}/g" *
     - ls -al
     - az aks install-cli
 
