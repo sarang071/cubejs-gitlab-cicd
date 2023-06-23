@@ -1,48 +1,49 @@
-# image: 'abhishekf5/maven-abhishek-docker-agent:v1'
+image: 'abhishekf5/maven-abhishek-docker-agent:v1'
 
-# variables:
-#   SONAR_HOST_URL: http://172.174.161.18/:9000
-#   SONAR_LOGIN: d853d3dfb865dd1eba7b2336dc575b6697b86571
+variables:
+  SONAR_HOST_URL: http://172.171.252.59:9000
+  SONAR_LOGIN: 079b8cb6de38d466123f86069aae197478bc617a
 
-# # Define the default working directory for the pipeline
-# before_script:
-#   - cd java-maven-sonar-argocd-helm-k8s/spring-boot-app
+# Define the default working directory for the pipeline
+before_script:
+  - cd java-maven-sonar-argocd-helm-k8s/spring-boot-app
 
-# stages:   
-#   - build
-#   - test
-#   # - sonarqube
-#   - dockerization
-#   - deploy
+stages:   
+  - build
+  - test
+  - sonarqube
+  - dockerization
+  - deploy
+  - cleanup
 
-# build-job:  
-#   stage: build
-#   script:
-#     - echo "Compiling the code..."
-#     - mvn clean package
+build-job:  
+  stage: build
+  script:
+    - echo "Compiling the code..."
+    - mvn clean package
 
-# unit-test-job:  
-#   stage: test  
-#   script:
-#     - echo "Running unit tests... This will take about 60 seconds."
-#     - mvn test
+unit-test-job:  
+  stage: test  
+  script:
+    - echo "Running unit tests... This will take about 60 seconds."
+    - mvn test
 
-# code-quality-job:  
-#   stage: sonarqube 
-#   script:
-#     - echo "scanning code"
-#     -  mvn sonar:sonar -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_LOGIN}
+code-quality-job:  
+  stage: sonarqube 
+  script:
+    - echo "scanning code"
+    -  mvn sonar:sonar -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_LOGIN}
 
-# kaniko:
-#   stage: dockerization
-#   image:
-#     name: gcr.io/kaniko-project/executor:debug
-#     entrypoint: [""]
+kaniko:
+  stage: dockerization
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
 
 
-#   script:
-#     - echo "{\"auths\":{\"cdexgitlab.azurecr.io\":{\"username\":\"cdexgitlab\",\"password\":\"RsD9NzIFKFXPfqpwbOwk1SFjMPz7iuVtKpd2o3fPVv+ACRDWfFb8\"}}}" > /kaniko/.docker/config.json
-#     - /kaniko/executor --context $CI_PROJECT_DIR --destination cdexgitlab.azurecr.io/gitlab-test:$CI_JOB_ID
+  script:
+    - echo "{\"auths\":{\"cdexgitlab.azurecr.io\":{\"username\":\"cdexgitlab\",\"password\":\"fm0cc8BkqO7Q7da/nSNcRNGkVTahAliel3JbjlIfne+ACRC37O/8\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor --context java-maven-sonar-argocd-helm-k8s/spring-boot-app/ --destination cdexgitlab.azurecr.io/gitlab-test:$CI_JOB_ID
 
 
 deploy:
@@ -50,46 +51,40 @@ deploy:
   image: mcr.microsoft.com/azure-cli
   script:
     # Install kubectl
-    - cd java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/
+    - cd ../spring-boot-app-manifests/
+    - sed -i "s/replaceImageTag/${CI_JOB_ID}/g" deployment.yml
+    - ls -al
     - az aks install-cli
 
     # Authenticate with AKS cluster
     - az login --service-principal -u 5c023096-5c14-43b1-acae-f0f22f115f56 -p grY8Q~PDZ71PaveGw448ZbKhGzCHvja4x~Jtla5E --tenant a787b852-29bf-4164-add5-7d55cac58f45
     - subscriptionId="$(az account list --query "[?isDefault].id" -o tsv)"
     - echo $subscriptionId
-#     - az account set --subscription 7df55ee2-5f0e-4c25-bf3b-49ac52a89cf8
-#     # - az aks get-credentials --resource-group Gitlab --name $AKS_CLUSTER_NAME
-#     - az aks get-credentials --resource-group Gitlab_group --name sarang
+    - az account set --subscription 0db1b169-34da-432c-98d4-2db3188443a7
+    # - az aks get-credentials --resource-group Gitlab --name $AKS_CLUSTER_NAME
+    - az aks get-credentials --resource-group Test --name Gitlab
+    - ls -al
 
-#     # Deploy to AKS cluster using kubectl
-#     - kubectl apply -f .
+    # Deploy to AKS cluster using kubectl
+    - kubectl apply -f .
+    
+Cleanup:
+  when: manual
+  stage: cleanup
+  image: mcr.microsoft.com/azure-cli
+  script:
+    # Install kubectl
+    - cd ../spring-boot-app-manifests/
+    - az aks install-cli
 
-# # deploy to k8s:
-# #   image:
-# #     name: ubuntu:latest
-# #     entrypoint: ['']
-# #   stage: deploy
-# #   before_script:
-# #   - apt-get update && apt install curl -y  
-# #   - cd java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests
-# #   - curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-# #   - install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-# #   - kubectl version --client
+    # Authenticate with AKS cluster
+    - az login --service-principal -u 5c023096-5c14-43b1-acae-f0f22f115f56 -p grY8Q~PDZ71PaveGw448ZbKhGzCHvja4x~Jtla5E --tenant a787b852-29bf-4164-add5-7d55cac58f45
+    - subscriptionId="$(az account list --query "[?isDefault].id" -o tsv)"
+    - echo $subscriptionId
+    - az account set --subscription 0db1b169-34da-432c-98d4-2db3188443a7
+    # - az aks get-credentials --resource-group Gitlab --name $AKS_CLUSTER_NAME
+    - az aks get-credentials --resource-group Test --name Gitlab
+    - ls -al
 
-# #   script:
-# #     - whoami
-# #     - mkdir /root/.kube
-#     - cat ${KUBE_CONFIG} > /root/.kube/config
-#     - ls -al /root/.kube/
-#     - sleep 30
-#     - kubectl get pods
-#   #   - kubectl config get-contexts
-#   #  #  - kubectl config use-context .gitlab/agents/kubernetes/:kubernetes
-#   #   - kubectl get pods
-#   #   - ls -al
-#   #   - sed -i "s/replaceImageTag/${CI_JOB_ID}/g" deployment.yml
-#   #   # - cat java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
-#   #   # - cd java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests
-# 
-
-
+    # Deploy to AKS cluster using kubectl
+    - kubectl delete -f .
