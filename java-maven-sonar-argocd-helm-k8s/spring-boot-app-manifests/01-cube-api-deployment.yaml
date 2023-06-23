@@ -29,13 +29,13 @@ spec:
             - name: CUBEJS_REDIS_URL
               value: redis://redis:6379 
             - name: CUBEJS_DB_HOST
-              value: <DATABASE_HOST>
+              value: cubejs-sql-server.mysql.database.azure.com
             - name: CUBEJS_DB_NAME
-              value: <DB_NAME>
+              value: "cubejs"
             - name: CUBEJS_DB_USER
-              value: <DB_USER>
+              value: "sarang"
             - name: CUBEJS_DB_PASS
-              value: <DB_PASSORD>
+              value: "Redracoon@123"
             - name: CUBEJS_DB_TYPE
               value: mysql
           image: cubejs/cube:v0.28.14

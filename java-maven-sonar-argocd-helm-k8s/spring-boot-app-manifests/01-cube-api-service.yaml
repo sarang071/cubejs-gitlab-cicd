@@ -14,5 +14,3 @@ spec:
       targetPort: 4000
   selector:
     service: cube-api
-status:
-  loadBalancer: {}
