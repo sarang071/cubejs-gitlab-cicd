@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cubestore-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: aks-cube-test-file
+  resources:
+    requests:
+      storage: 5Gi
