@@ -38,7 +38,7 @@ spec:
               value: "Redracoon@123"
             - name: CUBEJS_DB_TYPE
               value: mysql
-          image: cubejs/cube:replaceImageTag
+          image: cubejs/cube:v0.28.14
           name: cube-api
           ports:
             - containerPort: 3000

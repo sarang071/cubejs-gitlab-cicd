@@ -11,10 +11,10 @@ build Image and Push to ACR:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
   script:
-    - echo "{\"auths\":{\"cdexgitlab.azurecr.io\":{\"username\":\"cdexgitlab\",\"password\":\"fm0cc8BkqO7Q7da/nSNcRNGkVTahAliel3JbjlIfne+ACRC37O/8\"}}}" > /kaniko/.docker/config.json
+    - echo "{\"auths\":{\"cdexgitlab.azurecr.io\":{\"username\":\"cdexgitlab\",\"password\":\"qo1rlzlvdU/VoVaTD8oRiUSVzLLUPEfiWkGMHdcS3m+ACRA5NDj6\"}}}" > /kaniko/.docker/config.json
     - /kaniko/executor --context . --destination cdexgitlab.azurecr.io/cubejs:$CI_JOB_ID  
 
-code-quality-job:  
+.code-quality-job:  
   stage: sonarqube 
   script:
     - echo "scanning code"
@@ -24,7 +24,7 @@ Prequisites:
   stage: setup
   image: mcr.microsoft.com/azure-cli
   before_script:
-    - cd java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests
+    -  cd cubejs-manifests
   script:
     # Install kubectl
     - ls -al
@@ -36,10 +36,10 @@ Prequisites:
     - echo $subscriptionId
     - az account set --subscription 0db1b169-34da-432c-98d4-2db3188443a7
     # - az aks get-credentials --resource-group Gitlab --name $AKS_CLUSTER_NAME
-    - az aks get-credentials --resource-group Test --name Gitlab
+    - az aks get-credentials --resource-group Test --name gitlab
 
     # Installing Ingress Controller
-    - az aks update -n Gitlab -g Test  --enable-disk-driver --enable-file-driver --enable-blob-driver 
+    - az aks update -n Gitlab -g Test  --enable-disk-driver --enable-file-driver --enable-blob-driver -y
     - chmod 700 get_helm.sh
     - ./get_helm.sh
     - kubectl create namespace ingress-basic
@@ -64,7 +64,7 @@ deploy:
     - echo $subscriptionId
     - az account set --subscription 0db1b169-34da-432c-98d4-2db3188443a7
     # - az aks get-credentials --resource-group Gitlab --name $AKS_CLUSTER_NAME
-    - az aks get-credentials --resource-group Test --name Gitlab
+    - az aks get-credentials --resource-group Test --name gitlab
     - ls -al
 
     # Deploy to AKS cluster using kubectl
@@ -76,7 +76,7 @@ Cleanup:
   image: mcr.microsoft.com/azure-cli
   script:
     # Install kubectl
-    - cd ../spring-boot-app-manifests/
+    - cd cubejs-manifests
     - az aks install-cli
 
     # Authenticate with AKS cluster
@@ -85,8 +85,9 @@ Cleanup:
     - echo $subscriptionId
     - az account set --subscription 0db1b169-34da-432c-98d4-2db3188443a7
     # - az aks get-credentials --resource-group Gitlab --name $AKS_CLUSTER_NAME
-    - az aks get-credentials --resource-group Test --name Gitlab
+    - az aks get-credentials --resource-group Test --name gitlab
     - ls -al
 
     # Deploy to AKS cluster using kubectl
     - kubectl delete -f .
+    - kubectl delete namespace ingress-basic

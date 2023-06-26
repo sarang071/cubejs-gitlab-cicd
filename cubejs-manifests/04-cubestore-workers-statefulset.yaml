@@ -5,7 +5,7 @@ metadata:
     service: cubestore-workers
   name: cubestore-workers
 spec:
-  replicas: 1 # If you edit this, make sure to edit the CUBESTORE_WORKERS as well
+  replicas: 3 # If you edit this, make sure to edit the CUBESTORE_WORKERS as well
   serviceName: cubestore-workers
   selector:
     matchLabels:
@@ -36,10 +36,10 @@ spec:
               # We use "cubestore-workers-0.cubestore-workers:10000" as it points to the headless service
               # See also cubestore-router-statefulset.yaml
             - name: CUBESTORE_WORKERS
-              value: cubestore-workers-0.cubestore-workers:10000
+              value: cubestore-workers-0.cubestore-workers:10000,cubestore-workers-1.cubestore-workers:10000,cubestore-workers-2.cubestore-workers:10000
             - name: CUBESTORE_WORKER_PORT
               value: "10000"
-          image: cubejs/cubestore:replaceImageTag
+          image: cubejs/cubestore:v0.28.14
           name: cubestore-workers
           ports:
             - containerPort: 10000
