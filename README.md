@@ -113,15 +113,15 @@ Go to Azure Dashboard > Azure Active Directory > App Registerations > Create (or
 
 Generate password and logging creds for the service principal and add the below variables.
 
-ACR_LOGIN_SERVER = <Login Server Name of the ACR>
-ACR_USERNAME = <Username of the Azure Container Registery>
-ACR_PASSWORD = <Password of the ACR>
-ACR_REPO = <Azure Container Registery Name / Repo Name> #Example cdexgitlab.azurecr.io/cubejs
-AZURE_SP_APP_ID = <Application (client) ID of the Azure Service Principal>
-AZURE_SP_PASSWORD = <Password of the Azure Service Principal>
-TENANT_ID = <Tenant ID>
-RESOURCE_GROUP_NAME = <Azure Resource Group Name for the cluster>
-CLUSTER_NAME = <Name of the AKS Cluster>
+- ACR_LOGIN_SERVER = <Login Server Name of the ACR>
+- ACR_USERNAME = <Username of the Azure Container Registery>
+- ACR_PASSWORD = <Password of the ACR>
+- ACR_REPO = <Azure Container Registery Name / Repo Name> #Example cdexgitlab.azurecr.io/cubejs
+- AZURE_SP_APP_ID = <Application (client) ID of the Azure Service Principal>
+- AZURE_SP_PASSWORD = <Password of the Azure Service Principal>
+- TENANT_ID = <Tenant ID>
+- RESOURCE_GROUP_NAME = <Azure Resource Group Name for the cluster>
+- CLUSTER_NAME = <Name of the AKS Cluster>
 
 
 ## Once the repository is commited the pipeline will run and jobs will be executed as per the .gitlab-ci.yml file.
