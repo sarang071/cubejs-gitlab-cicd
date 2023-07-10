@@ -1,6 +1,5 @@
 stages:   
   - build
-  - sonarqube
   - setup
   - deploy
   - cleanup
@@ -11,14 +10,9 @@ build Image and Push to ACR:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
   script:
-    - echo "{\"auths\":{\"cdexgitlab.azurecr.io\":{\"username\":\"cdexgitlab\",\"password\":\"qo1rlzlvdU/VoVaTD8oRiUSVzLLUPEfiWkGMHdcS3m+ACRA5NDj6\"}}}" > /kaniko/.docker/config.json
-    - /kaniko/executor --context . --destination cdexgitlab.azurecr.io/cubejs:$CI_JOB_ID  
+    - echo "{\"auths\":{\"$ACR_LOGIN_SERVER\":{\"username\":\"$ACR_USERNAME\",\"password\":\"$ACR_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor --context . --destination $ACR_REPO:$CI_JOB_ID  
 
-.code-quality-job:  
-  stage: sonarqube 
-  script:
-    - echo "scanning code"
-    -  mvn sonar:sonar -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_LOGIN}
 
 Prequisites:
   stage: setup
@@ -27,19 +21,18 @@ Prequisites:
     -  cd cubejs-manifests
   script:
     # Install kubectl
-    - ls -al
     - az aks install-cli
 
     # Authenticate with AKS cluster
-    - az login --service-principal -u 5c023096-5c14-43b1-acae-f0f22f115f56 -p grY8Q~PDZ71PaveGw448ZbKhGzCHvja4x~Jtla5E --tenant a787b852-29bf-4164-add5-7d55cac58f45
+    - az login --service-principal -u $AZURE_SP_APP_ID -p $AZURE_SP_PASSWORD  --tenant $TENANT_ID
     - subscriptionId="$(az account list --query "[?isDefault].id" -o tsv)"
     - echo $subscriptionId
-    - az account set --subscription 0db1b169-34da-432c-98d4-2db3188443a7
+    - az account set --subscription $subscriptionId
     # - az aks get-credentials --resource-group Gitlab --name $AKS_CLUSTER_NAME
-    - az aks get-credentials --resource-group Test --name gitlab
+    - az aks get-credentials --resource-group $RESOURCE_GROUP_NAME --name $CLUSTER_NAME
 
     # Installing Ingress Controller
-    - az aks update -n Gitlab -g Test  --enable-disk-driver --enable-file-driver --enable-blob-driver -y
+    - az aks update -n $CLUSTER_NAME -g $RESOURCE_GROUP_NAME  --enable-disk-driver --enable-file-driver --enable-blob-driver -y
     - chmod 700 get_helm.sh
     - ./get_helm.sh
     - kubectl create namespace ingress-basic
@@ -59,12 +52,12 @@ deploy:
     - az aks install-cli
 
     # Authenticate with AKS cluster
-    - az login --service-principal -u 5c023096-5c14-43b1-acae-f0f22f115f56 -p grY8Q~PDZ71PaveGw448ZbKhGzCHvja4x~Jtla5E --tenant a787b852-29bf-4164-add5-7d55cac58f45
+    - az login --service-principal -u $AZURE_SP_APP_ID -p $AZURE_SP_PASSWORD  --tenant $TENANT_ID
     - subscriptionId="$(az account list --query "[?isDefault].id" -o tsv)"
     - echo $subscriptionId
-    - az account set --subscription 0db1b169-34da-432c-98d4-2db3188443a7
+    - az account set --subscription $subscriptionId
     # - az aks get-credentials --resource-group Gitlab --name $AKS_CLUSTER_NAME
-    - az aks get-credentials --resource-group Test --name gitlab
+    - az aks get-credentials --resource-group $RESOURCE_GROUP_NAME --name $CLUSTER_NAME
     - ls -al
 
     # Deploy to AKS cluster using kubectl
@@ -80,12 +73,12 @@ Cleanup:
     - az aks install-cli
 
     # Authenticate with AKS cluster
-    - az login --service-principal -u 5c023096-5c14-43b1-acae-f0f22f115f56 -p grY8Q~PDZ71PaveGw448ZbKhGzCHvja4x~Jtla5E --tenant a787b852-29bf-4164-add5-7d55cac58f45
+    - az login --service-principal -u $AZURE_SP_APP_ID -p $AZURE_SP_PASSWORD  --tenant $TENANT_ID
     - subscriptionId="$(az account list --query "[?isDefault].id" -o tsv)"
     - echo $subscriptionId
-    - az account set --subscription 0db1b169-34da-432c-98d4-2db3188443a7
+    - az account set --subscription $subscriptionId
     # - az aks get-credentials --resource-group Gitlab --name $AKS_CLUSTER_NAME
-    - az aks get-credentials --resource-group Test --name gitlab
+    - az aks get-credentials --resource-group $RESOURCE_GROUP_NAME --name $CLUSTER_NAME
     - ls -al
 
     # Deploy to AKS cluster using kubectl
