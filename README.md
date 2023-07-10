@@ -54,9 +54,9 @@ Configure the kube creds on the local terminal and follow the below steps.
 Next if helm is not installed, we need to install helm
 
 
- curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
- chmod 700 get_helm.sh
- ./get_helm.sh
+ - curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+ - chmod 700 get_helm.sh
+ - ./get_helm.sh
 
 ### Next, in values.yml in the repository, do the below changes
 1) On Line 52, add the ip address of your gitlab server.
