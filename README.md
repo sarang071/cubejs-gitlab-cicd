@@ -70,24 +70,24 @@ Go to the terminal where AKS is configured.
 
 Add the GitLab Helm repository:
 
-helm repo add gitlab https://charts.gitlab.io
+- helm repo add gitlab https://charts.gitlab.io
 
 If you are unable to access to the latest versions of GitLab Runner, you should update the chart. To update the chart, run:
 
-helm repo update gitlab
+- helm repo update gitlab
 
 To view a list of GitLab Runner versions you have access to, run:
 
-helm search repo -l gitlab/gitlab-runner
+- helm search repo -l gitlab/gitlab-runner
 
 Once you have configured GitLab Runner in your values.yaml file, run the following:
 
 # For Helm 3
-helm install --namespace <NAMESPACE> gitlab-runner -f values.yaml gitlab/gitlab-runner
+- helm install --namespace <NAMESPACE> gitlab-runner -f values.yaml gitlab/gitlab-runner
 
 If you are facing errors with the status of runner add the below flags and install the runner
 
-helm install --create-namespace --namespace <NAMESPACE> gitlab-runner -f values.yaml gitlab/gitlab-runner --wait  --set livenessProbe.initialDelaySeconds="60" --set readinessProbe.initialDelaySeconds="60"
+- helm install --create-namespace --namespace <NAMESPACE> gitlab-runner -f values.yaml gitlab/gitlab-runner --wait  --set livenessProbe.initialDelaySeconds="60" --set readinessProbe.initialDelaySeconds="60"
 
 
 ### Once the gitlab runner pod is up and running, check the status from the dashboard. 
