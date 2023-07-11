@@ -123,6 +123,8 @@ Generate password and logging creds for the service principal and add the below 
 - RESOURCE_GROUP_NAME = Azure Resource Group Name for the cluster
 - CLUSTER_NAME = Name of the AKS Cluster
 
+## For the deployment of cubejs application, we would need a storage account for storage class and a flexible mysql server.
+## The db host, db name and db password need to be configured in the manifest file of 01 and 02 deployments.
 
 ## Once the repository is commited the pipeline will run and jobs will be executed as per the .gitlab-ci.yml file.
 
